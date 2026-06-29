@@ -219,6 +219,7 @@ def run(TASK_ENV, args):
                 info_db = json.load(file)
 
             info = TASK_ENV.play_once()
+            info["actor_id_map"] = TASK_ENV.get_actor_id_map()  # MMZ: seg-id -> actor name (for target/obstacle/dest masks)
             info_db[f"episode_{episode_idx}"] = info
 
             with open(info_file_path, "w", encoding="utf-8") as file:

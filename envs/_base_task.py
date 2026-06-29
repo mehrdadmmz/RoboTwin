@@ -75,6 +75,7 @@ class Base_Task(gym.Env):
         random_setting = kwags.get("domain_randomization")
         self.random_background = random_setting.get("random_background", False)
         self.cluttered_table = random_setting.get("cluttered_table", False)
+        self.cluttered_num = random_setting.get("cluttered_num", 10)  # MMZ: clutter-count knob
         self.clean_background_rate = random_setting.get("clean_background_rate", 1)
         self.random_head_camera_dis = random_setting.get("random_head_camera_dis", 0)
         self.random_table_height = random_setting.get("random_table_height", 0)
@@ -131,7 +132,7 @@ class Base_Task(gym.Env):
         self.load_actors()
 
         if self.cluttered_table:
-            self.get_cluttered_table()
+            self.get_cluttered_table(cluttered_numbers=self.cluttered_num)  # MMZ: configurable count
 
         is_stable, unstable_list = self.check_stable()
         if not is_stable:
@@ -157,6 +158,21 @@ class Base_Task(gym.Env):
         self.info["info"] = {}
 
         self.stage_success_tag = False
+
+    def get_actor_id_map(self):
+        """MMZ: map each scene actor's segmentation id (per_scene_id == the actor-level
+        segmentation channel) to its name, so the collected masks can later be split into
+        target / obstacle / destination roles. Saved into scene_info.json per episode."""
+        id_map = {}
+        try:
+            for entity in self.scene.get_all_actors():
+                name = entity.get_name()
+                if name == "":
+                    continue
+                id_map[int(entity.per_scene_id)] = name
+        except Exception as e:
+            print(f"[MMZ] get_actor_id_map failed: {e}")
+        return id_map
 
     def check_stable(self):
         actors_list, actors_pose_list = [], []

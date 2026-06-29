@@ -1,3 +1,6 @@
+# MMZ local notes (do not push upstream)
+MMZ_*.md
+
 models/
 data/*
 !data/process_stuck.py
